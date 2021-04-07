@@ -112,6 +112,3 @@ WAGAP %>%
 #  theme_zebra()
 
 ```
-## extra text test
-
-## more test text
