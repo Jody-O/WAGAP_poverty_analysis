@@ -3,6 +3,8 @@ title: "<center>WAGAP Poverty Report: food implications</center>"
 author: "<center>Jody O'Connor</center>"
 date: "<center>4/3/2021</center>"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -49,16 +51,31 @@ We reduce poverty by helping people meet basic human needs and increase their se
 library(tidyverse)
 library(janitor)
 
-WAGAP <- read.csv("data/WAGAP-survey-data.csv") %>% 
+WAGAP <- read_csv("data/WAGAP-survey-data.csv") %>% 
   clean_names()
 
 ```
+
+```{r}
+survey_q_ids <- tibble(
+  quetion_text = colnames(WAGAP)
+) %>% 
+  mutate(question_id = paste0("q_", row_number()))
+
+charlies_WAGAP <- WAGAP
+
+colnames(charlies_WAGAP) <- survey_q_ids$question_id
+
+charlies_WAGAP
+```
+
 
 ### survey respondent demographics
 
 ```{r}
 WAGAP %>% 
-  summarise(median_household_size = median(how_many_people_are_in_your_household_sharing_income_and_expenses, na.rm = TRUE), number_of_responses = n())
+  summarise(median_household_size = median(how_many_people_are_in_your_household_sharing_income_and_expenses, na.rm = TRUE), number_of_responses = n()) %>% 
+  knitr::kable()
             
 ```
 ```{r}
@@ -89,7 +106,7 @@ WAGAP %>%
   filter(how_many_people_are_in_your_household_sharing_income_and_expenses > 1) %>% 
   filter(what_age_group_are_you_in == "18-64 years old") %>% 
   group_by(how_many_people_are_in_your_household_sharing_income_and_expenses, please_mark_the_gender_you_most_identify_with) %>% 
-  summarise(family_size = mean(how_many_people_are_in_your_household_sharing_income_and_expenses), number = n()) 
+  summarise(family_size = mean(how_many_people_are_in_your_household_sharing_income_and_expenses), number = n())
 ```
 
 ```{r}
@@ -112,3 +129,18 @@ WAGAP %>%
 #  theme_zebra()
 
 ```
+
+# Chart
+
+```{r}
+WAGAP %>% 
+  count(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
+  mutate(grouped_ethnicities = case_when(please_select_the_races_or_ethnicities_you_most_identify_with %in% c("Pirate", "Blue") ~ "Not useful data",
+                                         please_select_the_races_or_ethnicities_you_most_identify_with %in% c("Mixed", "mixed race") ~ "Mixed race",
+                                         TRUE ~ please_select_the_races_or_ethnicities_you_most_identify_with)) %>% 
+  ggplot(aes(y = is_food_a_challenge_in_your_community,
+             x = n,
+             fill = grouped_ethnicities)) +
+  geom_col()
+```
+
