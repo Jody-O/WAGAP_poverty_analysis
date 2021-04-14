@@ -51,7 +51,7 @@ We reduce poverty by helping people meet basic human needs and increase their se
 library(tidyverse)
 library(janitor)
 
-wagap <- read_csv("data/WAGAP-survey-data.csv") %>% 
+wagap <- read_csv("data/WAGAP-survey-data_utf8.csv") %>% 
   clean_names()
 
 ```
