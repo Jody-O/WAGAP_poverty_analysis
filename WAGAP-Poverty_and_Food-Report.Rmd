@@ -83,8 +83,22 @@ wagap %>%
   group_by(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
   summarise(median_household_size = median(how_many_people_are_in_your_household_sharing_income_and_expenses, na.rm = TRUE), number_of_responses = n())
 ```
+### Participant Poverty Status  
+#### 50-year County Poverty Trends (ACS data)
+#### (to be calculated and plotted later)
 
+## Number of adult women with family size greater than 1
 
+```{R}
+wagap %>% 
+  filter(please_mark_the_gender_you_most_identify_with == "Female") %>% 
+  filter(how_many_people_are_in_your_household_sharing_income_and_expenses > 1) %>% 
+  filter(what_age_group_are_you_in == "18-64 years old") %>% 
+  group_by(how_many_people_are_in_your_household_sharing_income_and_expenses, please_mark_the_gender_you_most_identify_with) %>% 
+  summarise(family_size = mean(how_many_people_are_in_your_household_sharing_income_and_expenses), number = n())
+```
+
+## Food Security - who is struggling?
 ```{r}
 wagap %>% 
   count(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community)
@@ -98,16 +112,6 @@ wagap %>%
   arrange(n)
 ```
 
-## Number of adult women with family size greater than 1
-
-```{R}
-wagap %>% 
-  filter(please_mark_the_gender_you_most_identify_with == "Female") %>% 
-  filter(how_many_people_are_in_your_household_sharing_income_and_expenses > 1) %>% 
-  filter(what_age_group_are_you_in == "18-64 years old") %>% 
-  group_by(how_many_people_are_in_your_household_sharing_income_and_expenses, please_mark_the_gender_you_most_identify_with) %>% 
-  summarise(family_size = mean(how_many_people_are_in_your_household_sharing_income_and_expenses), number = n())
-```
 
 ```{r}
 # install.packages("flextable")
@@ -117,7 +121,7 @@ library(flextable)
 
 ```{R}
 wagap %>% 
-  drop_na(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
+#  drop_na(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
   tabyl(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
   adorn_totals(where = c("row", "col")) %>% 
   adorn_percentages() %>% 
