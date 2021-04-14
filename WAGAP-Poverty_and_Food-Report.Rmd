@@ -1,5 +1,5 @@
 ---
-title: "<center>WAGAP Poverty Report: food implications</center>"
+title: "<center>wagap Poverty Report: food implications</center>"
 author: "<center>Jody O'Connor</center>"
 date: "<center>4/3/2021</center>"
 output: html_document
@@ -13,13 +13,13 @@ knitr::opts_chunk$set(echo = FALSE)
 
 # Introduction and Agency Overview
 
-Nationwide, Community Action Agencies (CCAs), like WAGAP, are expected to base their strategies and service priorities on the needs and strengths in their communities. The Results Oriented Management and Accountability (ROMA) framework is a continuous cycle used by CCAs to best meet local needs. Assessing assets and needs in a community is the first phase of the cycle and sets the stage for agency planning and improvement.  
+Nationwide, Community Action Agencies (CCAs), like wagap, are expected to base their strategies and service priorities on the needs and strengths in their communities. The Results Oriented Management and Accountability (ROMA) framework is a continuous cycle used by CCAs to best meet local needs. Assessing assets and needs in a community is the first phase of the cycle and sets the stage for agency planning and improvement.  
 
 <caption>**Results Oriented Management and Accountability (ROMA) cycle steps:**[^roma-cycle-source]</caption>
 
 <center>![](ROMAcycle.png)</center>
 
-As we embark on our next 3-year cycle, WAGAP partnered with Colibri Consulting to conduct a 2020 Community Needs Assessment for our service area. Input from diverse community members, staff and agency partners regarding community assets and needs was collected and analyzed, as outlined in Appendix A. Methodology.
+As we embark on our next 3-year cycle, wagap partnered with Colibri Consulting to conduct a 2020 Community Needs Assessment for our service area. Input from diverse community members, staff and agency partners regarding community assets and needs was collected and analyzed, as outlined in Appendix A. Methodology.
 
 This assessment targets the following ROMA Next Gen Needs Assessment goals:
 
@@ -33,13 +33,13 @@ This assessment targets the following ROMA Next Gen Needs Assessment goals:
 ***
 
 
-WAGAP is the Community Action Agency for Skamania and Klickitat Counties. Our mission is to: 
+wagap is the Community Action Agency for Skamania and Klickitat Counties. Our mission is to: 
 
 <center>
 #### _**Strengthen community by inspiring hope and helping people help themselves.**_    
 </center>
 
-We reduce poverty by helping people meet basic human needs and increase their self-sufficiency. With  8 locations across two counties, we generate economic impact by bringing hundreds of thousands of grant dollars into the community annually and providing 35 permanent jobs (plus 10 new temp jobs created in response to COVID-19 related needs). Each year, thousands of people turn to WAGAP for short-term assistance and long-term solutions to help them take control of their lives and their futures. Programs offering nutrition assistance and food banks, emergency housing and homeless shelter, domestic violence prevention and crime victim services, youth substance abuse prevention, care coordination, home energy and weatherization assistance, on the job training, COVID-19 relief funds, and after school youth programs are some of the ways WAGAP is meeting the promise of Community Action.
+We reduce poverty by helping people meet basic human needs and increase their self-sufficiency. With  8 locations across two counties, we generate economic impact by bringing hundreds of thousands of grant dollars into the community annually and providing 35 permanent jobs (plus 10 new temp jobs created in response to COVID-19 related needs). Each year, thousands of people turn to wagap for short-term assistance and long-term solutions to help them take control of their lives and their futures. Programs offering nutrition assistance and food banks, emergency housing and homeless shelter, domestic violence prevention and crime victim services, youth substance abuse prevention, care coordination, home energy and weatherization assistance, on the job training, COVID-19 relief funds, and after school youth programs are some of the ways wagap is meeting the promise of Community Action.
 
 [^roma-cycle-source]: ROMA cycle illustration and assessment goals from ROMA Next Gen Needs Assessment guidelines from https://communityactionpartnership.com/publication_toolkit/roma-next-gen-beyond-the-basics/
 
@@ -51,47 +51,47 @@ We reduce poverty by helping people meet basic human needs and increase their se
 library(tidyverse)
 library(janitor)
 
-WAGAP <- read_csv("data/WAGAP-survey-data.csv") %>% 
+wagap <- read_csv("data/WAGAP-survey-data.csv") %>% 
   clean_names()
 
 ```
 
 ```{r}
 survey_q_ids <- tibble(
-  quetion_text = colnames(WAGAP)
+  quetion_text = colnames(wagap)
 ) %>% 
   mutate(question_id = paste0("q_", row_number()))
 
-charlies_WAGAP <- WAGAP
+charlies_wagap <- wagap
 
-colnames(charlies_WAGAP) <- survey_q_ids$question_id
+colnames(charlies_wagap) <- survey_q_ids$question_id
 
-charlies_WAGAP
+charlies_wagap
 ```
 
 
 ### survey respondent demographics
 
 ```{r}
-WAGAP %>% 
+wagap %>% 
   summarise(median_household_size = median(how_many_people_are_in_your_household_sharing_income_and_expenses, na.rm = TRUE), number_of_responses = n()) %>% 
   knitr::kable()
             
 ```
 ```{r}
-WAGAP %>% 
+wagap %>% 
   group_by(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
   summarise(median_household_size = median(how_many_people_are_in_your_household_sharing_income_and_expenses, na.rm = TRUE), number_of_responses = n())
 ```
 
 
 ```{r}
-WAGAP %>% 
+wagap %>% 
   count(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community)
 ```
 
 ```{R}
-WAGAP %>% 
+wagap %>% 
   drop_na(is_food_a_challenge_in_your_community) %>% 
   filter(please_select_the_races_or_ethnicities_you_most_identify_with == "White" | please_select_the_races_or_ethnicities_you_most_identify_with == "Native American/American Indian" | please_select_the_races_or_ethnicities_you_most_identify_with == "Hispanic/Latino/LatinX") %>% 
   count(is_food_a_challenge_in_your_community, please_select_the_races_or_ethnicities_you_most_identify_with) %>% 
@@ -101,7 +101,7 @@ WAGAP %>%
 ## Number of adult women with family size greater than 1
 
 ```{R}
-WAGAP %>% 
+wagap %>% 
   filter(please_mark_the_gender_you_most_identify_with == "Female") %>% 
   filter(how_many_people_are_in_your_household_sharing_income_and_expenses > 1) %>% 
   filter(what_age_group_are_you_in == "18-64 years old") %>% 
@@ -116,7 +116,7 @@ library(flextable)
 ```
 
 ```{R}
-WAGAP %>% 
+wagap %>% 
   drop_na(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
   tabyl(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
   adorn_totals(where = c("row", "col")) %>% 
@@ -133,7 +133,7 @@ WAGAP %>%
 # Chart
 
 ```{r}
-WAGAP %>% 
+wagap %>% 
   count(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
   mutate(grouped_ethnicities = case_when(please_select_the_races_or_ethnicities_you_most_identify_with %in% c("Pirate", "Blue") ~ "Not useful data",
                                          please_select_the_races_or_ethnicities_you_most_identify_with %in% c("Mixed", "mixed race") ~ "Mixed race",
