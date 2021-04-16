@@ -162,7 +162,7 @@ ggplot(aes(y = is_food_a_challenge_in_your_community,
              fill = grouped_ethnicities)) +
   geom_col() + 
   geom_text(aes(label = n),
-            hjust = -1,
+            position = position_stack(vjust = 0.5),
             color = "purple") +
     scale_fill_brewer(palette = "Set3") +
   labs(title = "Food is a problem for many", x = "number of responses", y = "Is food a challenge in your community?", fill = "") +
@@ -170,35 +170,51 @@ ggplot(aes(y = is_food_a_challenge_in_your_community,
 
 ```
 
-# ```{r fig.height = 6, fig.width = 10}
-wagap %>% 
+# Dragons live below
+
+```{r fig.height = 6, fig.width = 10, eval=FALSE}
+food_challlenges_by_ethnicity <- wagap %>% 
   drop_na(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
   count(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
   mutate(grouped_ethnicities = case_when(please_select_the_races_or_ethnicities_you_most_identify_with %in% c("Pirate", "Blue", "all", "American", "Human", "Jewish", "Russian", "Russian Jewish Immigrant") ~ "other",
                                          please_select_the_races_or_ethnicities_you_most_identify_with %in% c("Mixed", "mixed race", "Hispanic + Native American", "Mixed/Donít know", "Northern Norwegian Eskimo") ~ "Mixed race",
-                                         TRUE ~ please_select_the_races_or_ethnicities_you_most_identify_with)) %>% 
+                                         TRUE ~ please_select_the_races_or_ethnicities_you_most_identify_with))
+
+
+challenged_order_tib <- tibble(
+  challenge_label = c("Yes, a BIG problem!", "Yes, somewhat", "No")
+) %>% 
+  mutate(challenge_order = row_number())
+
+food_challlenges_by_ethnicity <- food_challlenges_by_ethnicity %>% 
+  left_join(challenged_order_tib,
+            by = c("is_food_a_challenge_in_your_community" = "challenge_label")) %>% 
+  mutate(is_food_a_challenge_in_your_community = fct_reorder(is_food_a_challenge_in_your_community,
+                                                             challenge_order),
+         is_food_a_challenge_in_your_community = fct_rev(is_food_a_challenge_in_your_community))
+
+facet_plot_1 <- food_challlenges_by_ethnicity %>% 
   ggplot(aes(y = is_food_a_challenge_in_your_community,
              x = n,
              fill = grouped_ethnicities)) +
   geom_col() + 
-  facet_wrap(~grouped_ethnicities)
-  geom_text(aes(label = n),
-            hjust = -1,
+  facet_wrap(~grouped_ethnicities) +
+  geom_text(aes(label = n,
+                x = ifelse(n < 50, n + 15, n - 25)),
             color = "purple") +
-    scale_fill_brewer(palette = "Set3") +
+    scale_fill_brewer(palette = "Set2") +
   labs(title = "Food is a problem for many", x = "number of responses", y = "Is food a challenge in your community?", fill = "") +
   theme_bw()
-# ```
+```
 
-#```{r fig.height = 6, fig.width = 10}
-wagap %>% 
+```{r fig.height = 6, fig.width = 10, eval=FALSE}
+facet_plot_2 <- wagap %>% 
   drop_na(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
   count(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
   mutate(grouped_ethnicities = case_when(please_select_the_races_or_ethnicities_you_most_identify_with %in% c("Pirate", "Blue", "all", "American", "Human", "Jewish", "Russian", "Russian Jewish Immigrant") ~ "other",
                                          please_select_the_races_or_ethnicities_you_most_identify_with %in% c("Mixed", "mixed race", "Hispanic + Native American", "Mixed/Donít know", "Northern Norwegian Eskimo") ~ "Mixed race",
-                                         TRUE ~ please_select_the_races_or_ethnicities_you_most_identify_with)) %>% 
-  facet_plot <- ggplot(data = wagap,
-             aes(y = is_food_a_challenge_in_your_community,
+                                         TRUE ~ please_select_the_races_or_ethnicities_you_most_identify_with)) %>%
+  ggplot(aes(y = is_food_a_challenge_in_your_community,
              x = n,
              fill = grouped_ethnicities)) +
   geom_col() + 
@@ -210,5 +226,5 @@ wagap %>%
   labs(title = "Food is a problem for many", x = "number of responses", y = "Is food a challenge in your community?", fill = "") +
   theme_bw()
 
-  facet_plot + facet_plot
-#```
+facet_plot_1 + facet_plot_2
+```
