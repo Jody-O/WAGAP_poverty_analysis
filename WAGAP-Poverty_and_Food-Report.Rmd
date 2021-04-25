@@ -51,6 +51,7 @@ We reduce poverty by helping people meet basic human needs and increase their se
 library(tidyverse)
 library(janitor)
 
+# load data -------------------------------------
 # converting .csv to a utf8 csv removed multibyte strings and converted blank values to recognizable 'NA's
 
 wagap <- read_csv("data/WAGAP-survey-data_utf8.csv") %>% 
@@ -118,6 +119,8 @@ wagap %>%
 
 
 ```{r}
+# install table formatting package---------------------
+
 # install.packages("flextable")
 # https://davidgohel.github.io/flextable/index.html
 library(flextable)
@@ -155,16 +158,21 @@ library(patchwork)
 ```{r fig.height = 6, fig.width = 10}
 # NOTE to self:  if you're looking across many job titles that contain the word “Manager” then you would be looking for a substring - use str_detect(). If you're looking for either “Technical Manager” or “Team Manager” use %in%
 
+# group and clean race/ethnicity response values
+
 food_challenges_by_ethnicity <- wagap %>% 
   drop_na(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
   mutate(grouped_ethnicities = case_when(please_select_the_races_or_ethnicities_you_most_identify_with %in% c("Pirate", "Blue", "all", "American", "Human", "Jewish", "Russian", "Russian Jewish Immigrant") ~ "other",
                                          please_select_the_races_or_ethnicities_you_most_identify_with %in% c("Mixed", "mixed race", "Hispanic + Native American", "Mixed/Donít know", "Northern Norwegian Eskimo") ~ "Mixed race", TRUE ~ please_select_the_races_or_ethnicities_you_most_identify_with)) %>% 
   
-  count(grouped_ethnicities, is_food_a_challenge_in_your_community) %>% 
+  count(grouped_ethnicities, is_food_a_challenge_in_your_community) 
 
-group_by(is_food_a_challenge_in_your_community)
 
-# QUESTION: WHY DOESN'T group_by DO ANYTHING HERE?  I want it to group these values so I can label the chart below with a sum of ALL "Yes, somewhat" responses, as well as "No" and "Yes, a BIG problem" responses (instead of showing the number of responses from each race/ethnicity).  
+# total all challenge level responses for labeling purposes
+food_challenges_by_ethnicity <- food_challenges_by_ethnicity %>% 
+group_by(is_food_a_challenge_in_your_community) %>% 
+mutate(sum_of_all_challenge_level_responses = sum(n)) %>% 
+ungroup()
 
 
 # re-order challenge levels to show proper order in the chart y-axis:
@@ -174,7 +182,7 @@ challenge_level_tib <- tibble(
   mutate(challenge_order = row_number())
 
 
-# QUESTION:  Can you go over the difference between left_join and right_join when merging data frames?  When would you use one vs. the other?
+# NOTE to self: see github.com/gadenbuie/tidyexplain for visual explanation for different join types
 
 food_challenges_by_ethnicity <- food_challenges_by_ethnicity %>% 
   left_join(challenge_level_tib,
@@ -189,23 +197,23 @@ summary_food_plot <- food_challenges_by_ethnicity %>%
              x = n,
              fill = grouped_ethnicities)) +
   geom_col() + 
-  geom_text(aes(label = sum(n)),
+  geom_text(aes(label = sum_of_all_challenge_level_responses),
             position = position_stack(vjust = .5),
             color = "purple") +
     scale_fill_brewer(palette = "Set3") +
   labs(title = "Food is a problem for many", x = "number of responses", y = "Is food a challenge in your community?", fill = "") +
   theme_bw()
 
-summary_food_plot 
+summary_food_plot
 
-# QUESTION: why isn't "Yes, a BIG problem!" at the top of the y-axis like is was when Charlie added the [tibble > left_join > mutate] code in his video response (~ 15 minutes in) to my "week 5 project assignment issue"??  I tried to re-create this myself by changing the tibble name and moving the code to the non-faceted plot, but somehow it doesn't work now, even though it looks the same...? 
+# QUESTION: how can I remove all but one sum_of_all_challenge_level_responses label from each bar in this plot?
 
 ```
 
 # food facet plot
 
 
-```{r fig.height = 6, fig.width = 10, eval=FALSE}
+```{r fig.height = 6, fig.width = 10, eval=TRUE}
 
 facet_plot_1 <- food_challenges_by_ethnicity %>% 
   ggplot(aes(y = is_food_a_challenge_in_your_community,
@@ -220,10 +228,9 @@ facet_plot_1 <- food_challenges_by_ethnicity %>%
   labs(title = "Food is a problem for many", x = "number of responses", y = "Is food a challenge in your community?", fill = "") +
   theme_bw()
 
-facet_plot_1
 ```
 
-```{r fig.height = 10, fig.width = 11, eval=FALSE}
+```{r fig.height = 10, fig.width = 11, eval=TRUE}
 
 facet_plot_sans_key <- facet_plot_1 + theme(legend.position = "none")
 
