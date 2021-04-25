@@ -160,9 +160,15 @@ food_challenges_by_ethnicity <- wagap %>%
   mutate(grouped_ethnicities = case_when(please_select_the_races_or_ethnicities_you_most_identify_with %in% c("Pirate", "Blue", "all", "American", "Human", "Jewish", "Russian", "Russian Jewish Immigrant") ~ "other",
                                          please_select_the_races_or_ethnicities_you_most_identify_with %in% c("Mixed", "mixed race", "Hispanic + Native American", "Mixed/Donít know", "Northern Norwegian Eskimo") ~ "Mixed race", TRUE ~ please_select_the_races_or_ethnicities_you_most_identify_with)) %>% 
   
-  count(grouped_ethnicities, is_food_a_challenge_in_your_community) %>% 
+  count(grouped_ethnicities, is_food_a_challenge_in_your_community)
 
-group_by(is_food_a_challenge_in_your_community)
+
+food_challenges_by_ethnicity <- food_challenges_by_ethnicity %>% 
+  group_by(is_food_a_challenge_in_your_community) %>% 
+  mutate(total_in_food_challenge_level = sum(n)) %>% 
+  ungroup()
+
+
 
 # QUESTION: WHY DOESN'T group_by DO ANYTHING HERE?  I want it to group these values so I can label the chart below with a sum of ALL "Yes, somewhat" responses, as well as "No" and "Yes, a BIG problem" responses (instead of showing the number of responses from each race/ethnicity).  
 
@@ -181,7 +187,7 @@ food_challenges_by_ethnicity <- food_challenges_by_ethnicity %>%
             by = c("is_food_a_challenge_in_your_community" = "challenge_label")) %>% 
   mutate(is_food_a_challenge_in_your_community = fct_reorder(is_food_a_challenge_in_your_community,
                                                              challenge_order),
-    is_food_a_challenge_in_your_community = fct_rev(is_food_a_challenge_in_your_community)) 
+    is_food_a_challenge_in_your_community = fct_rev(is_food_a_challenge_in_your_community))
 
 
 summary_food_plot <- food_challenges_by_ethnicity %>% 
@@ -189,7 +195,7 @@ summary_food_plot <- food_challenges_by_ethnicity %>%
              x = n,
              fill = grouped_ethnicities)) +
   geom_col() + 
-  geom_text(aes(label = sum(n)),
+  geom_text(aes(label = total_in_food_challenge_level),
             position = position_stack(vjust = .5),
             color = "purple") +
     scale_fill_brewer(palette = "Set3") +
@@ -205,7 +211,7 @@ summary_food_plot
 # food facet plot
 
 
-```{r fig.height = 6, fig.width = 10, eval=FALSE}
+```{r fig.height = 6, fig.width = 10, eval=TRUE}
 
 facet_plot_1 <- food_challenges_by_ethnicity %>% 
   ggplot(aes(y = is_food_a_challenge_in_your_community,
@@ -223,7 +229,7 @@ facet_plot_1 <- food_challenges_by_ethnicity %>%
 facet_plot_1
 ```
 
-```{r fig.height = 10, fig.width = 11, eval=FALSE}
+```{r fig.height = 10, fig.width = 11, eval=TRUE}
 
 facet_plot_sans_key <- facet_plot_1 + theme(legend.position = "none")
 
