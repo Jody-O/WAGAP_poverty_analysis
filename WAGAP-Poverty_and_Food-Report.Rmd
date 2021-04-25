@@ -198,7 +198,7 @@ summary_food_plot <- food_challenges_by_ethnicity %>%
 
 summary_food_plot 
 
-# QUESTION: why isn't "Yes, a BIG problem!" at the top of the y-axis like is was when Charlie added the [tibble > left_join > mutate] code in his video response (~ 15 minutes in) to my "week 5 project assignment issue"??  I tried to re-create this myself by changing the tibble name and moving the code to the non-faceted plot, but somehow it doesn't work now, even though it looks the same...? 
+# QUESTION: why isn't "Yes, a BIG problem!" at the top of the y-axis like is was when Charlie added the [tibble > left_join > mutate] code in her video response (~ 15 minutes in) to my "week 5 project assignment issue"??  I tried to re-create this myself by changing the tibble name and moving the code to the non-faceted plot, but somehow it doesn't work now, even though it looks the same...? 
 
 ```
 
