@@ -134,7 +134,7 @@ wagap %>%
   adorn_percentages() %>% 
   adorn_pct_formatting(digits = 0, rounding = "half up", affix_sign=TRUE) %>% 
   adorn_ns() %>% 
-  adorn_title()
+  adorn_title() %>% 
 
 # flextable() %>%  NOTE: not working so I commented this out
 #  theme_zebra()
@@ -158,7 +158,7 @@ library(patchwork)
 ```{r fig.height = 6, fig.width = 10}
 # NOTE to self:  if you're looking across many job titles that contain the word “Manager” then you would be looking for a substring - use str_detect(). If you're looking for either “Technical Manager” or “Team Manager” use %in%
 
-# group and clean race/ethnicity response values
+# group and clean race/ethnicity response values -----------------------
 
 food_challenges_by_ethnicity <- wagap %>% 
   drop_na(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
@@ -168,7 +168,7 @@ food_challenges_by_ethnicity <- wagap %>%
   count(grouped_ethnicities, is_food_a_challenge_in_your_community) 
 
 
-# total all challenge level responses for labeling purposes
+# total all challenge level responses for labeling purposes (don't forget to ungroup after!)
 food_challenges_by_ethnicity <- food_challenges_by_ethnicity %>% 
 group_by(is_food_a_challenge_in_your_community) %>% 
 mutate(sum_of_all_challenge_level_responses = sum(n)) %>% 
@@ -197,16 +197,16 @@ summary_food_plot <- food_challenges_by_ethnicity %>%
              x = n,
              fill = grouped_ethnicities)) +
   geom_col() + 
-  geom_text(aes(label = sum_of_all_challenge_level_responses),
-            position = position_stack(vjust = .5),
-            color = "purple") +
+  geom_label(aes(label = sum_of_all_challenge_level_responses, x = sum_of_all_challenge_level_responses + 15),
+          #  position = position_stack(vjust = .5), THIS LINE NOT NEEDED SINCE LABEL POSITION IS ASSIGNED WITH LABEL ARGUMENT ABOVE
+            color = "black", show.legend = FALSE) +
     scale_fill_brewer(palette = "Set3") +
   labs(title = "Food is a problem for many", x = "number of responses", y = "Is food a challenge in your community?", fill = "") +
   theme_bw()
 
 summary_food_plot
 
-# QUESTION: how can I remove all but one sum_of_all_challenge_level_responses label from each bar in this plot?
+# NOTE to self: x = sum_of_all_challenge_level_responses added to the aes removed all but one sum_of_all_challenge_level_responses label from each bar in this plot.  Use geom_text instead of geom_label to avoid boxes around labels
 
 ```
 
