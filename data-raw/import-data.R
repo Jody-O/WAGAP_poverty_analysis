@@ -18,7 +18,7 @@ wagap_tidy_food <- wagap_raw %>%
   rename(food_stress_during_covid = during_the_months_after_covid_19_lockdowns_did_you_or_the_people_you_live_with_worry_that_you_would_run_out_of_food_before_you_were_able_to_get_more, is_food_a_challenge = is_food_a_challenge_in_your_community, gender = please_mark_the_gender_you_most_identify_with, race_ethnicity = please_select_the_races_or_ethnicities_you_most_identify_with, reasons_food_is_a_problem = if_you_said_yes_please_mark_all_the_reasons_food_is_a_problem_for_you_or_for_people_you_know)
 
 # QUESTIONS: is there an easier way to change variable names?
-# is there a better way to convert n/a and other missing data to 'NA'?
+# is there a better way to convert n/a and other missing data to 'NA' (compared to the line of code below)?
 
 wagap_tidy_food[wagap_tidy_food == "n/a"] <- NA
 
