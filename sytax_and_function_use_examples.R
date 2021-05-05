@@ -54,3 +54,48 @@ starwars %>%
 
 #use ?"operator" for help on sytnax/operators:
 ?"~"
+
+# c creates a named vector, and allows you to combine values into a vector. vectors have a depth of 1.  Lists can create more complex data: 
+
+library("tidyverse")
+
+starwars %>% 
+  rename(c("character_name" = "name",
+           "character_height" = "height"))
+
+c("character_name" = "name",
+  "character_height" = "height")
+
+c(1, "two", 3)
+
+charlies_vectors <- c("name_for_the_first_part_of_the_vector" = 22, "second_name" = 33)
+
+names(charlies_vectors)
+
+charlies_list <- list("name_for_thing_1" = c(1, 2, 3), 
+                      "name_for_thing_2" = c("two", "three", "four"))
+
+charlies_list
+
+charlies_list[2]
+
+
+# regex refers to regular expression (like white space) - use it to search for ways to deal with human expressions/ language.  "^, " looks for strings that start with ",".  ^ also means "not". $ means end of string, * means anything.  "[:alnum:]" looks for any alphanumeric (not a comma or white space, etc
+
+# tibble vs. tribble:  tribble allows you to write data by row
+
+tibble(
+  a = c(1, 2, 4),
+  b = c(6, 7, 8)
+)
+
+tribble(
+  ~name, ~age,
+  "Charlie", 33,
+  "Wren", 34,
+  "Jeremy", 56
+)
+
+# interactive charts: http://www.htmlwidgets.org/showcase_highcharts.html
+
+# fancy TABLES:  knitr::kable  or  library(DT)  or  library(gt)
