@@ -76,8 +76,52 @@ food_problems <- wagap_tidy_food %>%
 
   
 food_response_options <- tribble(
-  ~possible_responses,
-  "Lack of transportation to grocery stores or markets", "Not enough alternative food sources available (pantries, food bank, gleaning, etc.)","Reduced access to free and reduced school meals because of COVID-19 school closures", "Not enough income to purchase food")
+  ~selected_response, ~response_column_name,
+  "Lack of transportation to grocery stores or markets", "food_problem_lack_of_transportation",
+  "Not enough alternative food sources available", "food_problem_not_enough_alternatives",
+  "Reduced access to free and reduced school meals because of COVID-19 school closures", "food_problem_reduced_access",
+  "Not enough income to purchase food", "food_problems_not_enough_food"
+)
+
+# Complicated regex
+food_problems %>% 
+  select(reasons_food_is_a_problem) %>% 
+  mutate(food_problem_lack_of_transportation = str_detect(reasons_food_is_a_problem, "Lack of transportation to grocery stores or markets"),
+         food_problem_not_enough_alternatives = str_detect(reasons_food_is_a_problem, "Not enough alternative food sources available"),
+         food_problem_reduced_access = str_detect(reasons_food_is_a_problem, "Reduced access to free and reduced school meals because of COVID-19 school closures"),
+         food_problems_not_enough_food = str_detect(reasons_food_is_a_problem, "Not enough income to purchase food")) %>% 
+  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Lack of transportation to grocery stores or markets"),
+         reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Not enough alternative food sources available"),
+         reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Reduced access to free and reduced school meals because of COVID-19 school closures"),
+         reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Not enough income to purchase food")) %>% 
+  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "^,")) %>% 
+  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, ",[^[:alnum:]]*$")) %>%
+  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "^ ,[^[:alnum:]]*")) %>%
+  mutate(reasons_food_is_a_problem = str_trim(reasons_food_is_a_problem),
+         reasons_food_is_a_problem = ifelse(reasons_food_is_a_problem == "", NA, reasons_food_is_a_problem)) %>% 
+  View()
+
+
+# Simpler regex
+food_problems %>% 
+  select(reasons_food_is_a_problem) %>% 
+  mutate(food_problem_lack_of_transportation = str_detect(reasons_food_is_a_problem, "Lack of transportation to grocery stores or markets"),
+         food_problem_not_enough_alternatives = str_detect(reasons_food_is_a_problem, "Not enough alternative food sources available"),
+         food_problem_reduced_access = str_detect(reasons_food_is_a_problem, "Reduced access to free and reduced school meals because of COVID-19 school closures"),
+         food_problems_not_enough_food = str_detect(reasons_food_is_a_problem, "Not enough income to purchase food")) %>% 
+  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Lack of transportation to grocery stores or markets"),
+         reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Not enough alternative food sources available"),
+         reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Reduced access to free and reduced school meals because of COVID-19 school closures"),
+         reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Not enough income to purchase food")) %>% 
+  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "^,")) %>% 
+  mutate(reasons_food_is_a_problem = str_trim(reasons_food_is_a_problem),
+         reasons_food_is_a_problem = ifelse(reasons_food_is_a_problem == "", NA, reasons_food_is_a_problem)) %>% 
+  mutate(reasons_food_is_a_problem = ifelse(str_detect(reasons_food_is_a_problem, "[:alnum:]"), reasons_food_is_a_problem, NA))
+
+
+
+
+
 
 
 food_problems %>% 
