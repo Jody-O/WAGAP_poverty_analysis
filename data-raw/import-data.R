@@ -17,20 +17,36 @@ wagap_tidy_food <- wagap_raw %>%
          food_stress_b4_covid = during_the_12_months_before_covid_19_lockdowns_in_march_did_you_or_the_people_you_live_with_worry_that_you_would_run_out_of_food_before_you_were_able_to_get_more) %>% 
   rename(food_stress_during_covid = during_the_months_after_covid_19_lockdowns_did_you_or_the_people_you_live_with_worry_that_you_would_run_out_of_food_before_you_were_able_to_get_more, is_food_a_challenge = is_food_a_challenge_in_your_community, gender = please_mark_the_gender_you_most_identify_with, race_ethnicity = please_select_the_races_or_ethnicities_you_most_identify_with, reasons_food_is_a_problem = if_you_said_yes_please_mark_all_the_reasons_food_is_a_problem_for_you_or_for_people_you_know)
 
-# QUESTIONS: is there an easier way to change variable names?
-# is there a better way to convert n/a and other missing data to 'NA' (compared to the line of code below)?
+# Alternate way to change variable names using a separate tibble or csv listing old and new names:
+updated_colnames <- tribble(
+  ~old_column_name, ~new_column_name,
+  "please_enter_the_zip_code_for_the_community_you_live_in", "zip_code",
+  "during_the_12_months_before_covid_19_lockdowns_in_march_did_you_or_the_people_you_live_with_worry_that_you_would_run_out_of_food_before_you_were_able_to_get_more", "food_stress_b4_covid", "is_food_a_challenge_in_your_community", "is_food_a_challenge") %>% 
+  select(new_column_name, old_column_name) %>% 
+  # select() is used to re-order the columns
+  deframe()
+# deframe() from dplyr converts a 2-column tibble into a named vector, which has to happen before using the vector in rename().  A csv file could be used instead of the tibble to do the same rename process.
 
-wagap_tidy_food[wagap_tidy_food == "n/a"] <- NA
+#wagap_raw %>% 
+#  select(timestamp, please_enter_the_zip_code_for_the_community_you_live_in, during_the_12_months_before_covid_19_lockdowns_in_march_did_you_or_the_people_you_live_with_worry_that_you_would_run_out_of_food_before_you_were_able_to_get_more, during_the_months_after_covid_19_lockdowns_did_you_or_the_people_you_live_with_worry_that_you_would_run_out_of_food_before_you_were_able_to_get_more, is_food_a_challenge_in_your_community, please_select_the_races_or_ethnicities_you_most_identify_with, please_mark_the_gender_you_most_identify_with, if_you_said_yes_please_mark_all_the_reasons_food_is_a_problem_for_you_or_for_people_you_know) %>% 
+#  rename(updated_colnames)
+
+
+wagap_tidy_food <- wagap_tidy_food %>% 
+  mutate(across(everything(), ~na_if(.x, "n/a")))
+
+# alternate way to replace all "n/a" with NA:
+# wagap_tidy_food[wagap_tidy_food == "n/a"] <- NA
 
 
 # Delete repeated entries (by timestamp) ----------------------------------
-
+# use distinct()
 
 
 # clean and group race/ethnicity variable  -----------------------------
 wagap_tidy_food <- wagap_tidy_food %>% 
   drop_na() %>% 
-  mutate(race_ethnicity = case_when(race_ethnicity %in% c("Pirate", "Blue", "all", "American", "Human", "Jewish", "Russian", "Russian Jewish Immigrant") ~ "other",
+  mutate(race_ethnicity = case_when(race_ethnicity %in% c("Pirate", "Blue", "all", "American", "Human", "Jewish", "Russian", "Russian Jewish Immigrant") ~ "Other",
                                          race_ethnicity %in% c("Mixed", "mixed race", "Hispanic + Native American", "Mixed/Donít know", "Mixed/Don’t know", "Northern Norwegian Eskimo") ~ "Mixed race", TRUE ~ race_ethnicity))
 
 
@@ -55,11 +71,16 @@ wagap_tidy_food <- wagap_tidy_food %>%
 
 food_problems <- wagap_tidy_food %>% 
   select(timestamp, reasons_food_is_a_problem, race_ethnicity) %>% 
-  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "(pantries, food bank, gleaning, etc.)")) %>% 
+  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, " [(]pantries, food bank, gleaning, etc.[)]")) %>% 
+  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, ", n/a"))
+
   
-# QUESTION:  how can I remove parentheses-bracket character strings?? This does not work:  mutate(reasons_food_is_a_problem = str_replace(reasons_food_is_a_problem, " ()", "")) %>% 
-  
-  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, ", n/a")) %>% 
+food_response_options <- tribble(
+  ~possible_responses,
+  "Lack of transportation to grocery stores or markets", "Not enough alternative food sources available (pantries, food bank, gleaning, etc.)","Reduced access to free and reduced school meals because of COVID-19 school closures", "Not enough income to purchase food")
+
+
+food_problems %>% 
   separate(reasons_food_is_a_problem, 
            sep = ",",
            into = c("prob1", "prob2", "prob3", "prob4", "prob5", "prob6", "prob7", "prob8", "prob9"))
@@ -79,6 +100,9 @@ food_problems <- wagap_tidy_food %>%
 write_rds(wagap_tidy_food, file = "data/wagap_tidy_food.rds")
 
 write_rds(food_problems, file = "data/food_problems.rds")
+
+
+
 
 
 
