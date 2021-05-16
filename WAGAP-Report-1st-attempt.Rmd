@@ -1,11 +1,10 @@
 ---
-title: "<center>WAGAP Poverty Report: food implications</center>"
-author: "<center>Jody O'Connor</center>"
-date: "<center>5/14/2021</center>"
+title: "WAGAP-report-1st-attempt"
+author: "Jody O'Connor"
+date: "4/3/2021"
 output: html_document
-editor_options: 
-  chunk_output_type: console
 ---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.height = 10, fig.width = 10)
@@ -51,14 +50,98 @@ We reduce poverty by helping people meet basic human needs and increase their se
 library(tidyverse)
 library(janitor)
 
+# load data -------------------------------------
+# converting .csv to a utf8 csv removed multibyte strings and converted blank values to recognizable 'NA's
+
+wagap <- read_csv("data/WAGAP-survey-data_utf8.csv") %>% 
+  clean_names()
+
+```
+
+```{r}
+
+# create question ID variable so long variable names can be avoided (nut currently being used for this)
+survey_q_ids <- tibble(
+  quetion_text = colnames(wagap)
+) %>% 
+  mutate(question_id = paste0("q_", row_number()))
+
+charlies_wagap <- wagap
+
+colnames(charlies_wagap) <- survey_q_ids$question_id
+
+charlies_wagap
+```
+
+
+### survey respondent demographics
+
+```{r}
+wagap %>% 
+  summarise(median_household_size = median(how_many_people_are_in_your_household_sharing_income_and_expenses, na.rm = TRUE), number_of_responses = n()) %>% 
+  knitr::kable()
+            
+```
+```{r}
+wagap %>% 
+  group_by(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
+  summarise(median_household_size = median(how_many_people_are_in_your_household_sharing_income_and_expenses, na.rm = TRUE), number_of_responses = n())
+```
+### Participant Poverty Status  
+#### 50-year County Poverty Trends (ACS data)
+#### (to be calculated and plotted later)
+
+## Number of adult women with family size greater than 1
+
+```{R}
+wagap %>% 
+  filter(please_mark_the_gender_you_most_identify_with == "Female") %>% 
+  filter(how_many_people_are_in_your_household_sharing_income_and_expenses > 1) %>% 
+  filter(what_age_group_are_you_in == "18-64 years old") %>% 
+  group_by(how_many_people_are_in_your_household_sharing_income_and_expenses, please_mark_the_gender_you_most_identify_with) %>% 
+  summarise(family_size = mean(how_many_people_are_in_your_household_sharing_income_and_expenses), number = n())
+```
+
+## Food Security - who is struggling?
+```{r}
+wagap %>% 
+  count(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community)
+```
+
+```{R}
+wagap %>% 
+  drop_na(is_food_a_challenge_in_your_community) %>% 
+  filter(please_select_the_races_or_ethnicities_you_most_identify_with == "White" | please_select_the_races_or_ethnicities_you_most_identify_with == "Native American/American Indian" | please_select_the_races_or_ethnicities_you_most_identify_with == "Hispanic/Latino/LatinX") %>% 
+  count(is_food_a_challenge_in_your_community, please_select_the_races_or_ethnicities_you_most_identify_with) %>% 
+  arrange(n)
+```
+
+
+```{r}
 # install table formatting package---------------------
 
 # install.packages("flextable")
 # https://davidgohel.github.io/flextable/index.html
 library(flextable)
-# install.packages("gt")
-library(gt)
+```
 
+```{R}
+wagap %>% 
+  drop_na(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
+  tabyl(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
+  adorn_totals(where = c("row", "col")) %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting(digits = 0, rounding = "half up", affix_sign=TRUE) %>% 
+  adorn_ns() %>% 
+  adorn_title() %>% 
+
+# flextable() %>%  NOTE: not working so I commented this out
+#  theme_zebra()
+
+```
+
+# Food and Ethnicity Summary Chart
+```{r}
 # custom fonts and themes
 
 # install.packages("devtools")
@@ -69,93 +152,26 @@ library(hrbrthemes)
 # install.packages("devtools")
 # devtools::install_github("thomasp85/patchwork")
 library(patchwork)
-library(scales)
-
-library(extrafont)
-font_import(pattern = "Georgia")
-windowsFonts(`Georgia` = windowsFont("Georgia"))
-windowsFonts(`Georgia` = windowsFont("Arial"))
 ```
-
-```{r} 
-# load data -------------------------------------
-
-wagap <- read_rds("data/WAGAP_tidy_food.rds")
-
-
-```
-
-### survey respondent demographics
-
-```{r}
-wagap %>% 
-  summarise(median_household_size = median(household_income, na.rm = TRUE), number_of_responses = n()) %>% 
-  knitr::kable()
-```
-
-```{r}
-race_ethnicity_proportions <- wagap %>% 
-  count(race_ethnicity) %>% 
-  mutate(pct_of_total_race_ethnicity = n/sum(n)) %>% 
-  tabyl(race_ethnicity, pct_of_total_race_ethnicity)
-```
-
-```{r} 
-wagap %>% 
-  group_by(race_ethnicity, is_food_a_challenge) %>% 
-  summarise(median_household_size = median(household_size, na.rm = TRUE), number_of_responses = n()) %>% 
-  arrange(number_of_responses)
-```
-### Participant Poverty Status  
-#### 50-year County Poverty Trends (ACS data), participant poverty levels plot
-#### (to be calculated and plotted later)
-
-## Food Security - who is struggling?
-```{r}
-wagap %>% 
-  count(race_ethnicity, is_food_a_challenge)
-```
-## The majority of races and ethnicities are Native American, Hispanic and White.
-```{r}
-wagap %>% 
-  drop_na(is_food_a_challenge) %>% 
-  filter(race_ethnicity == "White" | race_ethnicity == "Native American/American Indian" | race_ethnicity == "Hispanic/Latino/LatinX") %>% 
-  count(is_food_a_challenge, race_ethnicity) %>% 
-  arrange(n)
-  
-```
-
-
-```{r}
-wagap %>% 
-  count(race_ethnicity, is_food_a_challenge)
-
-wagap %>% 
-  drop_na(race_ethnicity, is_food_a_challenge) %>% 
-  tabyl(race_ethnicity, is_food_a_challenge) %>% 
-  adorn_totals(where = c("row", "col")) %>% 
-  adorn_percentages() %>% 
-  adorn_pct_formatting(digits = 0, rounding = "half up", affix_sign=TRUE) %>% 
-  adorn_ns() %>% 
-  adorn_title()
-
-# flextable() %>%  NOTE: not working so I commented this out
-#  theme_zebra()
-
-```
-
-# Food and Ethnicity Summary Chart
 
 ```{r fig.height = 6, fig.width = 10}
+# NOTE to self:  if you're looking across many job titles that contain the word “Manager” then you would be looking for a substring - use str_detect(). If you're looking for either “Technical Manager” or “Team Manager” use %in%
+
+# group and clean race/ethnicity response values -----------------------
+
+food_challenges_by_ethnicity <- wagap %>% 
+  drop_na(please_select_the_races_or_ethnicities_you_most_identify_with, is_food_a_challenge_in_your_community) %>% 
+  mutate(grouped_ethnicities = case_when(please_select_the_races_or_ethnicities_you_most_identify_with %in% c("Pirate", "Blue", "all", "American", "Human", "Jewish", "Russian", "Russian Jewish Immigrant") ~ "other",
+                                         please_select_the_races_or_ethnicities_you_most_identify_with %in% c("Mixed", "mixed race", "Hispanic + Native American", "Mixed/Donít know", "Northern Norwegian Eskimo") ~ "Mixed race", TRUE ~ please_select_the_races_or_ethnicities_you_most_identify_with)) %>% 
+  
+  count(grouped_ethnicities, is_food_a_challenge_in_your_community) 
 
 
 # total all challenge level responses for labeling purposes (don't forget to ungroup after!)
-food_challenges_by_ethnicity <- wagap %>% 
-count(race_ethnicity, is_food_a_challenge) %>% 
-group_by(is_food_a_challenge) %>% 
+food_challenges_by_ethnicity <- food_challenges_by_ethnicity %>% 
+group_by(is_food_a_challenge_in_your_community) %>% 
 mutate(sum_of_all_challenge_level_responses = sum(n)) %>% 
-ungroup() %>% 
-mutate(pct_of_all_challenge_level_responses = sum_of_all_challenge_level_responses / sum(n))
+ungroup()
 
 
 # re-order challenge levels to show proper order in the chart y-axis:
@@ -169,35 +185,23 @@ challenge_level_tib <- tibble(
 
 food_challenges_by_ethnicity <- food_challenges_by_ethnicity %>% 
   left_join(challenge_level_tib,
-            by = c("is_food_a_challenge" = "challenge_label")) %>% 
-  mutate(is_food_a_challenge = fct_reorder(is_food_a_challenge,
+            by = c("is_food_a_challenge_in_your_community" = "challenge_label")) %>% 
+  mutate(is_food_a_challenge_in_your_community = fct_reorder(is_food_a_challenge_in_your_community,
                                                              challenge_order),
-    is_food_a_challenge = fct_rev(is_food_a_challenge)) 
+    is_food_a_challenge_in_your_community = fct_rev(is_food_a_challenge_in_your_community)) 
 
 
 summary_food_plot <- food_challenges_by_ethnicity %>% 
-  ggplot(aes(y = is_food_a_challenge,
+  ggplot(aes(y = is_food_a_challenge_in_your_community,
              x = n,
-             fill = race_ethnicity)) +
+             fill = grouped_ethnicities)) +
   geom_col() + 
-# QUESTION 1: how can I format the percent that shows up in the label (to make it say "21.9%" instead of the decimal)? percent_format from scales package does not work
-  geom_label(aes(label = pct_of_all_challenge_level_responses, x = sum_of_all_challenge_level_responses + 15),
-#  position = position_stack(vjust = .5), THIS LINE NOT NEEDED SINCE LABEL POSITION IS ASSIGNED WITH LABEL ARGUMENT ABOVE
+  geom_label(aes(label = sum_of_all_challenge_level_responses, x = sum_of_all_challenge_level_responses + 15),
+          #  position = position_stack(vjust = .5), THIS LINE NOT NEEDED SINCE LABEL POSITION IS ASSIGNED WITH LABEL ARGUMENT ABOVE
             color = "black", show.legend = FALSE) +
     scale_fill_brewer(palette = "Set3") +
   labs(title = "Food is a problem for many", x = "number of responses", y = "Is food a challenge in your community?", fill = "") +
-  theme_ipsum_rc() +
-  theme(plot.title = element_text(family = "Georgia"),
-        axis.text = element_text(family = "Georgia",
-                                  size = 10),
-        axis.title = element_text(family = "Georgia"),
-# QUESTION 2: Why don't the axis titles show up as Georgia font when the axis text and plot title do?  NOTE - To import 'Georgia' I used: library(extrafont)
-  #font_import(pattern = "Georgia")
-  # windowsFonts(`Georgia` = windowsFont("Georgia"))
-        panel.grid.minor.y = element_blank(),
-        panel.grid.major.x = element_line(color = "orange"))
-
-# QUESTION 3: How can I move the position of the axis labels?  I want 'Is food a challenge in your community?' to start near the bottom of the axis, rather than the top.
+  theme_bw()
 
 summary_food_plot
 
@@ -205,17 +209,17 @@ summary_food_plot
 
 ```
 
-
 # food facet plot
+
 
 ```{r fig.height = 6, fig.width = 10, eval=TRUE}
 
 facet_plot_1 <- food_challenges_by_ethnicity %>% 
-  ggplot(aes(y = is_food_a_challenge,
+  ggplot(aes(y = is_food_a_challenge_in_your_community,
              x = n,
-             fill = race_ethnicity)) +
+             fill = grouped_ethnicities)) +
   geom_col() + 
-  facet_wrap(~race_ethnicity) +
+  facet_wrap(~grouped_ethnicities) +
   geom_text(aes(label = n,
                 x = ifelse(n < 50, n + 15, n - 25)),
             color = "purple") +
@@ -223,12 +227,9 @@ facet_plot_1 <- food_challenges_by_ethnicity %>%
   labs(title = "Food is a problem for many", x = "number of responses", y = "Is food a challenge in your community?", fill = "") +
   theme_bw()
 
-facet_plot_1
-
 # NOTE: theme elements demos: https://henrywang.nl/ggplot2-theme-elements-demonstration/
 
 ```
-
 
 ```{r fig.height = 10, fig.width = 11, eval=TRUE}
 

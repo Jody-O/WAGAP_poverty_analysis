@@ -8,7 +8,8 @@ library(readxl)
 
 # import WAGAP community survey data -------------------------------------
 
-wagap_raw <- read_excel("data-raw/MASTER WAGAP 2020 CNA Community survey data.xlsx") %>% 
+wagap_raw <- read_excel("data-raw/MASTER WAGAP 2020 CNA Community survey data.xlsx",
+                        sheet = 1) %>% 
   clean_names()
 
 wagap_tidy_food <- wagap_raw %>% 
@@ -40,8 +41,8 @@ wagap_tidy_food <- wagap_tidy_food %>%
 
 
 # Delete repeated entries (by timestamp) ----------------------------------
-# use distinct()
-
+wagap_tidy_food <- wagap_tidy_food %>% 
+  distinct(timestamp, .keep_all = TRUE)
 
 # clean and group race/ethnicity variable  -----------------------------
 wagap_tidy_food <- wagap_tidy_food %>% 
@@ -50,6 +51,7 @@ wagap_tidy_food <- wagap_tidy_food %>%
                                          race_ethnicity %in% c("Mixed", "mixed race", "Hispanic + Native American", "Mixed/Donít know", "Mixed/Don’t know", "Northern Norwegian Eskimo") ~ "Mixed race", TRUE ~ race_ethnicity))
 
 
+# example porportion calculation:
  race_ethnicity_proportions <- wagap_tidy_food %>% 
   count(race_ethnicity) %>% 
   mutate(pct_of_total_race_ethnicity = n/sum(n))
@@ -83,27 +85,10 @@ food_response_options <- tribble(
   "Not enough income to purchase food", "food_problems_not_enough_food"
 )
 
-# Complicated regex
-food_problems %>% 
-  select(reasons_food_is_a_problem) %>% 
-  mutate(food_problem_lack_of_transportation = str_detect(reasons_food_is_a_problem, "Lack of transportation to grocery stores or markets"),
-         food_problem_not_enough_alternatives = str_detect(reasons_food_is_a_problem, "Not enough alternative food sources available"),
-         food_problem_reduced_access = str_detect(reasons_food_is_a_problem, "Reduced access to free and reduced school meals because of COVID-19 school closures"),
-         food_problems_not_enough_food = str_detect(reasons_food_is_a_problem, "Not enough income to purchase food")) %>% 
-  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Lack of transportation to grocery stores or markets"),
-         reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Not enough alternative food sources available"),
-         reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Reduced access to free and reduced school meals because of COVID-19 school closures"),
-         reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Not enough income to purchase food")) %>% 
-  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "^,")) %>% 
-  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, ",[^[:alnum:]]*$")) %>%
-  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "^ ,[^[:alnum:]]*")) %>%
-  mutate(reasons_food_is_a_problem = str_trim(reasons_food_is_a_problem),
-         reasons_food_is_a_problem = ifelse(reasons_food_is_a_problem == "", NA, reasons_food_is_a_problem)) %>% 
-  View()
 
 
-# Simpler regex
-food_problems %>% 
+# create separate cols for each stock answer & remove all stock answers from 'reasons_food_is_a_problem' col & remove extra commas using regex (language character manipulation)
+food_problems_categorized <- food_problems %>% 
   select(reasons_food_is_a_problem) %>% 
   mutate(food_problem_lack_of_transportation = str_detect(reasons_food_is_a_problem, "Lack of transportation to grocery stores or markets"),
          food_problem_not_enough_alternatives = str_detect(reasons_food_is_a_problem, "Not enough alternative food sources available"),
@@ -116,19 +101,23 @@ food_problems %>%
   mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "^,")) %>% 
   mutate(reasons_food_is_a_problem = str_trim(reasons_food_is_a_problem),
          reasons_food_is_a_problem = ifelse(reasons_food_is_a_problem == "", NA, reasons_food_is_a_problem)) %>% 
-  mutate(reasons_food_is_a_problem = ifelse(str_detect(reasons_food_is_a_problem, "[:alnum:]"), reasons_food_is_a_problem, NA))
+  mutate(reasons_food_is_a_problem = ifelse(str_detect(reasons_food_is_a_problem, "[:alnum:]"), reasons_food_is_a_problem, NA)) %>% 
+# more complicated regex option:
+  #   mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, ",[^[:alnum:]]*$")) %>%
+  #   mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "^ ,[^[:alnum:]]*")) %>%
+mutate(unique_food_problems = reasons_food_is_a_problem) %>% 
+  select(-reasons_food_is_a_problem)
 
 
-
-
-
-
-
-food_problems %>% 
-  separate(reasons_food_is_a_problem, 
-           sep = ",",
-           into = c("prob1", "prob2", "prob3", "prob4", "prob5", "prob6", "prob7", "prob8", "prob9"))
-# this doesn't work:  pivot_longer((cols = prob1, prob2, prob3, prob4, prob5, prob6, prob7, prob8, prob9), values_to = "reasons_food_is_a_problem")
+# get all answers into the same column:
+  
+# this doesn't work:  
+# food_problems %>% 
+# separate(reasons_food_is_a_problem, 
+#           sep = ",",
+#           into = c("prob1", "prob2", "prob3", "prob4", "prob5", "prob6", "prob7", "prob8", "prob9"))
+# pivot_longer((cols = prob1, prob2, prob3, prob4, prob5, prob6, prob7, prob8, prob9), values_to = "reasons_food_is_a_problem")
+# use separate_rows() to move comma delimited answers into their own cell in the same column (instead of pivot_longer)
 
 # QUESTION: how can I combine all responses from reasons_food_is_a_problem into one column?  The survey allowed each respondent to select more than one 'reason', and the resulting Excel file kept all selected responses in one column, separated by commas.  I want to create a chart showing how many times each problem type was selected, so I am trying to separate all responses, then pivot so all responses ('reasons') end up as individual values all in the same variable column.
 
