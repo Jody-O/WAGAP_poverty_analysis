@@ -180,10 +180,12 @@ summary_food_plot <- food_challenges_by_ethnicity %>%
              x = n,
              fill = race_ethnicity)) +
   geom_col() + 
-# QUESTION 1: how can I format the percent that shows up in the label (to make it say "21.9%" instead of the decimal)? percent_format from scales package does not work
-  geom_label(aes(label = pct_of_all_challenge_level_responses, x = sum_of_all_challenge_level_responses + 15),
+# NOTE to self: how can I format the percent that shows up in the label (to make it say "21.9%" instead of the decimal)? ANSWER: use scales::percent
+  geom_label(aes(label = scales::percent(pct_of_all_challenge_level_responses, accuracy = 0.1),
+                 x = sum_of_all_challenge_level_responses + 15),
 #  position = position_stack(vjust = .5), THIS LINE NOT NEEDED SINCE LABEL POSITION IS ASSIGNED WITH LABEL ARGUMENT ABOVE
-            color = "black", show.legend = FALSE) +
+            color = "black", show.legend = FALSE,
+            family = "Georgia") +
     scale_fill_brewer(palette = "Set3") +
   labs(title = "Food is a problem for many", x = "number of responses", y = "Is food a challenge in your community?", fill = "") +
   theme_ipsum_rc() +
@@ -191,13 +193,13 @@ summary_food_plot <- food_challenges_by_ethnicity %>%
         axis.text = element_text(family = "Georgia",
                                   size = 10),
         axis.title = element_text(family = "Georgia"),
-# QUESTION 2: Why don't the axis titles show up as Georgia font when the axis text and plot title do?  NOTE - To import 'Georgia' I used: library(extrafont)
+        axis.title.y = element_text(hjust = 0),
+        legend.text = element_text(family = "Georgia"),
+# QUESTION: Why don't the axis titles show up as Georgia font when the axis text and plot title do?  NOTE - I am using Windows. To import 'Georgia' I used: library(extrafont)
   #font_import(pattern = "Georgia")
   # windowsFonts(`Georgia` = windowsFont("Georgia"))
         panel.grid.minor.y = element_blank(),
-        panel.grid.major.x = element_line(color = "orange"))
-
-# QUESTION 3: How can I move the position of the axis labels?  I want 'Is food a challenge in your community?' to start near the bottom of the axis, rather than the top.
+        panel.grid.major.x = element_line(color = "light blue"))
 
 summary_food_plot
 

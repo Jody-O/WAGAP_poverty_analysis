@@ -80,7 +80,25 @@ charlies_list
 charlies_list[2]
 
 
-# regex refers to regular expression (like white space) - use it to search for ways to deal with human expressions/ language.  "^, " looks for strings that start with ",".  ^ also means "not". $ means end of string, * means anything.  "[:alnum:]" looks for any alphanumeric (not a comma or white space, etc
+# regex refers to regular expression (like white space) - use it to search for ways to deal with human expressions/ language.  "^, " looks for strings that start with ",".  ^ also means "not". $ means end of string, * means anything.  "[:alnum:]" looks for any alphanumeric (not a comma or white space, etc)
+
+# Complicated regex example
+food_problems %>% 
+  select(reasons_food_is_a_problem) %>% 
+  mutate(food_problem_lack_of_transportation = str_detect(reasons_food_is_a_problem, "Lack of transportation to grocery stores or markets"),
+         food_problem_not_enough_alternatives = str_detect(reasons_food_is_a_problem, "Not enough alternative food sources available"),
+         food_problem_reduced_access = str_detect(reasons_food_is_a_problem, "Reduced access to free and reduced school meals because of COVID-19 school closures"),
+         food_problems_not_enough_food = str_detect(reasons_food_is_a_problem, "Not enough income to purchase food")) %>% 
+  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Lack of transportation to grocery stores or markets"),
+         reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Not enough alternative food sources available"),
+         reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Reduced access to free and reduced school meals because of COVID-19 school closures"),
+         reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Not enough income to purchase food")) %>% 
+  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "^,")) %>% 
+  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, ",[^[:alnum:]]*$")) %>%
+  mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "^ ,[^[:alnum:]]*")) %>%
+  mutate(reasons_food_is_a_problem = str_trim(reasons_food_is_a_problem),
+         reasons_food_is_a_problem = ifelse(reasons_food_is_a_problem == "", NA, reasons_food_is_a_problem)) %>% 
+  View()
 
 # tibble vs. tribble:  tribble allows you to write data by row
 

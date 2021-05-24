@@ -13,13 +13,13 @@ wagap_raw <- read_excel("data-raw/MASTER WAGAP 2020 CNA Community survey data.xl
   clean_names()
 
 wagap_tidy_food <- wagap_raw %>% 
-  select(timestamp, please_enter_the_zip_code_for_the_community_you_live_in, during_the_12_months_before_covid_19_lockdowns_in_march_did_you_or_the_people_you_live_with_worry_that_you_would_run_out_of_food_before_you_were_able_to_get_more, during_the_months_after_covid_19_lockdowns_did_you_or_the_people_you_live_with_worry_that_you_would_run_out_of_food_before_you_were_able_to_get_more, is_food_a_challenge_in_your_community, please_select_the_races_or_ethnicities_you_most_identify_with, please_mark_the_gender_you_most_identify_with, if_you_said_yes_please_mark_all_the_reasons_food_is_a_problem_for_you_or_for_people_you_know) %>% 
+  select(timestamp, please_enter_the_zip_code_for_the_community_you_live_in, during_the_12_months_before_covid_19_lockdowns_in_march_did_you_or_the_people_you_live_with_worry_that_you_would_run_out_of_food_before_you_were_able_to_get_more, during_the_months_after_covid_19_lockdowns_did_you_or_the_people_you_live_with_worry_that_you_would_run_out_of_food_before_you_were_able_to_get_more, is_food_a_challenge_in_your_community, please_select_the_races_or_ethnicities_you_most_identify_with, please_mark_the_gender_you_most_identify_with, if_you_said_yes_please_mark_all_the_reasons_food_is_a_problem_for_you_or_for_people_you_know, how_many_people_are_in_your_household_sharing_income_and_expenses, during_the_past_year_what_was_the_total_gross_income_for_your_household) %>% 
   rename(zip_code = please_enter_the_zip_code_for_the_community_you_live_in, 
          food_stress_b4_covid = during_the_12_months_before_covid_19_lockdowns_in_march_did_you_or_the_people_you_live_with_worry_that_you_would_run_out_of_food_before_you_were_able_to_get_more) %>% 
-  rename(food_stress_during_covid = during_the_months_after_covid_19_lockdowns_did_you_or_the_people_you_live_with_worry_that_you_would_run_out_of_food_before_you_were_able_to_get_more, is_food_a_challenge = is_food_a_challenge_in_your_community, gender = please_mark_the_gender_you_most_identify_with, race_ethnicity = please_select_the_races_or_ethnicities_you_most_identify_with, reasons_food_is_a_problem = if_you_said_yes_please_mark_all_the_reasons_food_is_a_problem_for_you_or_for_people_you_know)
+  rename(food_stress_during_covid = during_the_months_after_covid_19_lockdowns_did_you_or_the_people_you_live_with_worry_that_you_would_run_out_of_food_before_you_were_able_to_get_more, is_food_a_challenge = is_food_a_challenge_in_your_community, gender = please_mark_the_gender_you_most_identify_with, race_ethnicity = please_select_the_races_or_ethnicities_you_most_identify_with, reasons_food_is_a_problem = if_you_said_yes_please_mark_all_the_reasons_food_is_a_problem_for_you_or_for_people_you_know, household_income = during_the_past_year_what_was_the_total_gross_income_for_your_household, household_size = how_many_people_are_in_your_household_sharing_income_and_expenses)
 
 # Alternate way to change variable names using a separate tibble or csv listing old and new names:
-updated_colnames <- tribble(
+# updated_colnames <- tribble(
   ~old_column_name, ~new_column_name,
   "please_enter_the_zip_code_for_the_community_you_live_in", "zip_code",
   "during_the_12_months_before_covid_19_lockdowns_in_march_did_you_or_the_people_you_live_with_worry_that_you_would_run_out_of_food_before_you_were_able_to_get_more", "food_stress_b4_covid", "is_food_a_challenge_in_your_community", "is_food_a_challenge") %>% 
@@ -44,17 +44,14 @@ wagap_tidy_food <- wagap_tidy_food %>%
 wagap_tidy_food <- wagap_tidy_food %>% 
   distinct(timestamp, .keep_all = TRUE)
 
+
 # clean and group race/ethnicity variable  -----------------------------
+# NOTE to self:  if you're looking across many job titles that contain the word “Manager” then you would be looking for a substring - use str_detect(). If you're looking for either “Technical Manager” or “Team Manager” use %in%
+
 wagap_tidy_food <- wagap_tidy_food %>% 
   drop_na() %>% 
   mutate(race_ethnicity = case_when(race_ethnicity %in% c("Pirate", "Blue", "all", "American", "Human", "Jewish", "Russian", "Russian Jewish Immigrant") ~ "Other",
                                          race_ethnicity %in% c("Mixed", "mixed race", "Hispanic + Native American", "Mixed/Donít know", "Mixed/Don’t know", "Northern Norwegian Eskimo") ~ "Mixed race", TRUE ~ race_ethnicity))
-
-
-# example porportion calculation:
- race_ethnicity_proportions <- wagap_tidy_food %>% 
-  count(race_ethnicity) %>% 
-  mutate(pct_of_total_race_ethnicity = n/sum(n))
 
 
 
@@ -117,6 +114,7 @@ mutate(unique_food_problems = reasons_food_is_a_problem) %>%
 #           sep = ",",
 #           into = c("prob1", "prob2", "prob3", "prob4", "prob5", "prob6", "prob7", "prob8", "prob9"))
 # pivot_longer((cols = prob1, prob2, prob3, prob4, prob5, prob6, prob7, prob8, prob9), values_to = "reasons_food_is_a_problem")
+
 # use separate_rows() to move comma delimited answers into their own cell in the same column (instead of pivot_longer)
 
 # QUESTION: how can I combine all responses from reasons_food_is_a_problem into one column?  The survey allowed each respondent to select more than one 'reason', and the resulting Excel file kept all selected responses in one column, separated by commas.  I want to create a chart showing how many times each problem type was selected, so I am trying to separate all responses, then pivot so all responses ('reasons') end up as individual values all in the same variable column.
