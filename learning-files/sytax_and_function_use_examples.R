@@ -117,3 +117,27 @@ tribble(
 # interactive charts: http://www.htmlwidgets.org/showcase_highcharts.html
 
 # fancy TABLES:  knitr::kable  or  library(DT)  or  library(gt)
+
+# QUESTION: how can I get ggthemr package on my machine?  The error i got from install.packages("ggthemr") was: Warning in install.packages :  package ‘ggthemr’ is not available for this version of R.  So I went to https://github.com/Mikata-Project/ggthemr and found the following code: 
+devtools::install_github('Mikata-Project/ggthemr')
+library(ggthemr)
+
+but it resulted in these errors: 
+  Installing package into ‘C:/Users/Ryan/Documents/R/win-library/4.0’
+(as ‘lib’ is unspecified)
+* installing *source* package 'ggthemr' ...
+** using staged installation
+** R
+** byte-compile and prepare package for lazy loading
+Error: package or namespace load failed for 'ggplot2' in loadNamespace(i, c(lib.loc, .libPaths()), versionCheck = vI[[i]]):
+  namespace 'ellipsis' 0.3.1 is already loaded, but >= 0.3.2 is required
+Error: package 'ggplot2' could not be loaded
+In addition: Warning message:
+  package 'ggplot2' was built under R version 4.0.4 
+Execution halted
+ERROR: lazy loading failed for package 'ggthemr'
+* removing 'C:/Users/Ryan/Documents/R/win-library/4.0/ggthemr'
+Warning message:
+  In i.p(...) :
+  installation of package ‘C:/Users/Ryan/AppData/Local/Temp/RtmpeeN00W/file3a78202f2703/ggthemr_1.1.0.tar.gz’ had non-zero exit status
+

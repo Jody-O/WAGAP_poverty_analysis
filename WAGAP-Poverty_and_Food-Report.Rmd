@@ -75,6 +75,24 @@ library(extrafont)
 font_import(pattern = "Georgia")
 windowsFonts(`Georgia` = windowsFont("Georgia"))
 windowsFonts(`Georgia` = windowsFont("Arial"))
+
+library(ggtext)
+
+# custom theme 
+theme_draft <- function() {
+  theme_ipsum_rc(base_family = "Roboto") +
+    # ggthemr() +
+    # theme_minimal()+
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_text(family = "Roboto", hjust = 0),
+        axis.text = element_text(family = "Georgia",
+                                  size = 15),
+        legend.text = element_text(family = "Georgia"),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_line(color = "orange")) +
+  theme(plot.title = element_markdown()) 
+}
+
 ```
 
 ```{r} 
@@ -180,26 +198,20 @@ summary_food_plot <- food_challenges_by_ethnicity %>%
              x = n,
              fill = race_ethnicity)) +
   geom_col() + 
-# NOTE to self: how can I format the percent that shows up in the label (to make it say "21.9%" instead of the decimal)? ANSWER: use scales::percent
-  geom_label(aes(label = scales::percent(pct_of_all_challenge_level_responses, accuracy = 0.1),
+# NOTE to self: to format the percent that shows up in the label (to make it say "21.9%" instead of the decimal): use scales::percent
+  geom_text(aes(label = scales::percent(pct_of_all_challenge_level_responses, accuracy = 0.1),
                  x = sum_of_all_challenge_level_responses + 15),
 #  position = position_stack(vjust = .5), THIS LINE NOT NEEDED SINCE LABEL POSITION IS ASSIGNED WITH LABEL ARGUMENT ABOVE
             color = "black", show.legend = FALSE,
             family = "Georgia") +
     scale_fill_brewer(palette = "Set3") +
-  labs(title = "Food is a problem for many", x = "number of responses", y = "Is food a challenge in your community?", fill = "") +
-  theme_ipsum_rc() +
+  labs(title = "<span style = 'color: orange'>Food</span> is a problem for many", x = "number of responses", y = "Is food a challenge in your community?", fill = "") +
+  theme_draft() +
   theme(plot.title = element_text(family = "Georgia"),
-        axis.text = element_text(family = "Georgia",
-                                  size = 10),
-        axis.title = element_text(family = "Georgia"),
-        axis.title.y = element_text(hjust = 0),
-        legend.text = element_text(family = "Georgia"),
-# QUESTION: Why don't the axis titles show up as Georgia font when the axis text and plot title do?  NOTE - I am using Windows. To import 'Georgia' I used: library(extrafont)
-  #font_import(pattern = "Georgia")
-  # windowsFonts(`Georgia` = windowsFont("Georgia"))
-        panel.grid.minor.y = element_blank(),
-        panel.grid.major.x = element_line(color = "light blue"))
+        axis.title.x = element_text(colour = "orange"),
+        legend.text = element_text(family = "Georgia"))
+
+# QUESTION: after creating my custom theme in chunk 2: theme_draft(), I want to change a few of the theme elements for this plot - mostly I want to put the x-axis label back on without changing the custom theme.  But running lines 210-212 result in Error: Only elements of the same class can be merged
 
 summary_food_plot
 
