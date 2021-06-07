@@ -297,20 +297,34 @@ food_probs_mapped <- food_problems_categorized %>%
   )) %>% 
   ggplot(aes(area = n,
              fill = n,
-             label = plot_label)) +
+             label = paste(plot_label, n, sep = "\n"))) +
   geom_treemap() +
-  geom_treemap_text(aes(fontface = "italic", colour = "white", start = "center", grow = T, family = "Georgia")) +
+  geom_treemap_text(aes(fontface = "italic", family = "Georgia"),
+                    colour = c(rep("white", 3),
+                               rep("grey", 1),
+                               rep("white", 1)),
+                    place = "topleft", grow = FALSE, reflow = T, size = 16) +
+# QUESTION: is there a way to 'grow' the label size in relation to the area value (so "not enough income to purchase food" is the largest font size and "other reasons" is the smallest font size?)
   
-# QUESTION: how can I set the colors used in my treemap?  scale_fill gives Error: Continuous value supplied to discrete scale.  Also, why doesn't colour = "white" change the label color?   
-  # scale_fill_brewer(palette = "Set3") +
+# NOTE to self: for some reason label color & other specifications must be set outside of the aes
+  scale_fill_distiller(palette = "YlGnBu",
+                       trans = "reverse", name = "number of \nresponses") +
+  # trans changes the order of the color scale
+  guides(fill = guide_colorbar(reverse = TRUE)) +
+  
+#QUESTION:  How can I change the fill scale max/min values? - I'd like the plot colors to be a bit less extreme from the high to low end of the scale.  Also it would be good to know how to change the scale to go from 25-350 or so - instead of using the default max/min
+  
+  theme_ipsum_rc() +
   theme(plot.title = element_markdown()) +
-#  theme(plot.title = element_text(color = "blue", family = "Helvetica")) +
+ # theme(plot.title = element_text(color = "blue", family = "Helvetica")) +
   theme(legend.text = element_text(family = "Georgia")) +
-  theme(legend.position = "bottom") + 
-  labs(title = "Food problem are dominated by lack of <span style = 'color: orange'>income</span>", caption = "treemap caption draft")
+  theme(legend.position = "right") + 
+  theme(plot.caption = element_text(size = 12)) +
+  labs(title = "Food problems are dominated by lack of <span style = 'color: purple'>income</span>", caption = "transportation is also a big problem, and there's a lack of alternative food sources \nlike gleaning opportunities and ethnic food markets") 
+  
+  
 
-# QUESTION: I'd like to use my custom theme or another theme like theme_ipsum_rc.... does treemapify not work with custom themes??
-theme_ipsum_rc()
+# NOTE: colorbrewer2.org gives a good look at color scale options
 
 food_probs_mapped
 
