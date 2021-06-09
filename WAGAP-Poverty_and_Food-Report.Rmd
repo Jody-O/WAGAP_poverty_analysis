@@ -5,8 +5,8 @@ date: "<center>5/14/2021</center>"
 output:
   word_document:
     reference_docx: templates/word_template.docx
-  html_document:
-    theme: cerulean
+#  html_document:
+#    theme: cerulean
 editor_options:
   chunk_output_type: console
 ---

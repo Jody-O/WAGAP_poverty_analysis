@@ -57,7 +57,6 @@ wagap_tidy_food <- wagap_tidy_food %>%
 
 # Group gender responses --------------------------------------------------
 
-  
 all_gender_responses <- wagap_tidy_food %>% 
   count(gender)
 
@@ -79,9 +78,8 @@ food_response_options <- tribble(
   "Lack of transportation to grocery stores or markets", "food_problem_lack_of_transportation",
   "Not enough alternative food sources available", "food_problem_not_enough_alternatives",
   "Reduced access to free and reduced school meals because of COVID-19 school closures", "food_problem_reduced_access",
-  "Not enough income to purchase food", "food_problems_not_enough_food"
+  "Not enough income to purchase food", "food_problem_not_enough_income"
 )
-
 
 
 # create separate cols for each stock answer & remove all stock answers from 'reasons_food_is_a_problem' col & remove extra commas using regex (language character manipulation)
@@ -90,7 +88,7 @@ food_problems_categorized <- food_problems %>%
   mutate(food_problem_lack_of_transportation = str_detect(reasons_food_is_a_problem, "Lack of transportation to grocery stores or markets"),
          food_problem_not_enough_alternatives = str_detect(reasons_food_is_a_problem, "Not enough alternative food sources available"),
          food_problem_reduced_access = str_detect(reasons_food_is_a_problem, "Reduced access to free and reduced school meals because of COVID-19 school closures"),
-         food_problems_not_enough_food = str_detect(reasons_food_is_a_problem, "Not enough income to purchase food")) %>% 
+         food_problem_not_enough_income = str_detect(reasons_food_is_a_problem, "Not enough income to purchase food")) %>% 
   mutate(reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Lack of transportation to grocery stores or markets"),
          reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Not enough alternative food sources available"),
          reasons_food_is_a_problem = str_remove(reasons_food_is_a_problem, "Reduced access to free and reduced school meals because of COVID-19 school closures"),
@@ -106,7 +104,17 @@ mutate(unique_food_problems = reasons_food_is_a_problem) %>%
   select(-reasons_food_is_a_problem)
 
 
-# get all answers into the same column:
+# QUESTION: why are all food_problem write_in values TRUE below?  One problem is that multiple answers in each cell have not been separated into their own row yet, but even single stock answers show up as TRUE.  It doesn't affect the .Rmd calculations because food_problems_categorized was used instead of food_problems.  But I still want to know why the ifelse is returning all TRUE values.
+
+food_problems %>% 
+  mutate(write_in = ifelse(reasons_food_is_a_problem %in% food_response_options,
+                           FALSE,
+                           TRUE))
+
+# NOTES to self: 
+# to get all answers into the same column:
+
+# I wanted to combine all responses from reasons_food_is_a_problem into one column.  The survey allowed each respondent to select more than one 'reason', and the resulting Excel file kept all selected responses in one column, separated by commas.  I wanted to create a chart showing how many times each problem type was selected, so I needed to separate all responses, then pivot so all responses ('reasons') end up as individual values all in the same variable column.
   
 # this doesn't work:  
 # food_problems %>% 
@@ -115,11 +123,11 @@ mutate(unique_food_problems = reasons_food_is_a_problem) %>%
 #           into = c("prob1", "prob2", "prob3", "prob4", "prob5", "prob6", "prob7", "prob8", "prob9"))
 # pivot_longer((cols = prob1, prob2, prob3, prob4, prob5, prob6, prob7, prob8, prob9), values_to = "reasons_food_is_a_problem")
 
-# use separate_rows() to move comma delimited answers into their own cell in the same column (instead of pivot_longer)
 
-# QUESTION: how can I combine all responses from reasons_food_is_a_problem into one column?  The survey allowed each respondent to select more than one 'reason', and the resulting Excel file kept all selected responses in one column, separated by commas.  I want to create a chart showing how many times each problem type was selected, so I am trying to separate all responses, then pivot so all responses ('reasons') end up as individual values all in the same variable column.
+# use separate_rows() to move comma delimited answers into their own cell in the same column (not pivot_longer)
 
-# I also want to be able to view unique responses (write-in responses) so I can group similar responses or remove them from the final chart... I started working on this with a count and if_else command but I need to sort out the question above first...
+
+# I also wanted to be able to view unique responses (write-in responses) so I can group similar responses or remove them from the final chart... I started working on this with a count and if_else command but abandoned the code to let Charlie do it her way
 # count(reasons_food_is_a_problem) %>% 
 # mutate(unique_responses = if_else(n == 1, reasons_food_is_a_problem, ""))
 
@@ -132,6 +140,7 @@ write_rds(wagap_tidy_food, file = "data/wagap_tidy_food.rds")
 
 write_rds(food_problems, file = "data/food_problems.rds")
 
+write_rds(food_problems_categorized, file = "data/food_problems_categorized.rds")
 
 
 
