@@ -3,8 +3,19 @@ title: '<center>WAGAP Poverty Report: food implications</center>'
 author: "<center>Jody O'Connor</center>"
 date: "<center>5/14/2021</center>"
 output:
-  word_document:
-    reference_docx: templates/word_template.docx
+    pagedreport::paged_windmill:
+    logo: "images/bird_transback.png"
+    front_img: "images/queen_ann_hummer.png"
+    img_to_dark: FALSE
+    logo_to_white: TRUE
+knit: pagedown::chrome_print
+main-color: "#530577"
+secondary-color: "#43d293"
+main-font: "Montserrat"
+header-font: "Poppins"  
+
+#  word_document:
+#    reference_docx: templates/word_template.docx
 #  html_document:
 #    theme: cerulean
 editor_options:
@@ -19,6 +30,8 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE,
 # QUESTION: is there a way to resize images to be rendered in Word??
 
 #NOTE to self: to explore David Keyes' html template themes & refer to https://www.datadreaming.org/post/r-markdown-theme-gallery/ for other html themes
+# watch week 11 class for publishing options (start at 11:30 min, 25:00 - google drive publishing, 41:00 paged report templates for pdf) https://rfortherestofus.com/rin3-spring-2021-syllabus/
+# https://pagedreport.rfortherestofus.com/
 ```
 
 # WAGAP Poverty Report
@@ -29,7 +42,7 @@ Nationwide, Community Action Agencies (CCAs), like WAGAP, are expected to base t
 
 <caption>**Results Oriented Management and Accountability (ROMA) cycle steps:**[^roma-cycle-source]</caption>
 
-<center>![](ROMAcycle.png)</center>
+<center>![](images/ROMAcycle.png)</center>
 
 As we embark on our next 3-year cycle, WAGAP partnered with Colibri Consulting to conduct a 2020 Community Needs Assessment for our service area. Input from diverse community members, staff and agency partners regarding community assets and needs was collected and analyzed, as outlined in Appendix A. Methodology.
 
